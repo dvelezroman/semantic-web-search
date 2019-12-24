@@ -5,14 +5,11 @@ import ItemComponent from './ItemComponent';
 
 const useStyles = makeStyles(theme => ({
 	root: {
-		width: '100%',
-		maxWidth: 360,
 		backgroundColor: theme.palette.background.paper
 	}
 }));
 
 const ListComponent = ({ result }) => {
-	console.log({ result });
 	const classes = useStyles();
 	return (
 		<List className={classes.root}>

@@ -1,14 +1,28 @@
 import React from 'react';
+import { ListItem, ListItemText, Grid, Typography, Divider } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { ListItem, ListItemText } from '@material-ui/core';
 
-const useStyles = makeStyles(theme => ({}));
+const useStyles = makeStyles(theme => ({
+	item: {
+		flexDirection: 'column',
+		alignItems: 'flex-start'
+	}
+}));
 
 const ItemComponent = ({ item }) => {
+	const classes = useStyles();
+
 	return (
-		<ListItem>
-			<ListItemText primary={item} secondary={'Description'}></ListItemText>
-		</ListItem>
+		<>
+			<ListItem className={classes.item}>
+				<ListItemText primary={item.title} secondary={item.description} />
+				<Grid item>
+					{item.author.length > 1 && <Typography>{`author: ${item.author}`}</Typography>}
+					<Typography>{item.date}</Typography>
+				</Grid>
+			</ListItem>
+			<Divider variant='inset' component='li' />
+		</>
 	);
 };
 

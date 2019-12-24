@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from 'react';
 import rp from 'request-promise';
 import cheerio from 'cheerio';
-import fetch from 'node-fetch';
 
 const urls = {
-	infobae: 'https://www.infobae.com/search/{text_to_search}}/'
+	infobae: 'https://www.infobae.com/search/{text_to_search}/?q{text_to_search}'
 };
 
 const useSearch = () => {
 	const onSearch = async text => {
 		console.log('A buscar...');
-		const searchUrl = `https://www.infobae.com/search/rafael+correa/?q=rafael+correa`;
+		const searchUrl = getFormattedText(text);
 		const data = await rp(`https://cors-anywhere.herokuapp.com/${searchUrl}`).then(html => html);
 
-		// const data = await fetch('https://cors-anywhere.herokuapp.com/https://github.com/trending');
 		const $ = cheerio.load(data, {
 			withDomLvl1: true,
 			normalizeWhitespace: false,
@@ -26,9 +23,17 @@ const useSearch = () => {
 			.map(repo => {
 				const $repo = $(repo);
 				const title = $repo.find('a').text();
-				return title;
+				const description = $repo.find('.blurb').text();
+				const author = $repo.find('.author').text();
+				const date = $repo.find('.timestamp').text();
+				return { title, description, author, date };
 			});
 		return allTitles;
+	};
+
+	const getFormattedText = text => {
+		const words = text.trim().replace(' ', '+');
+		return urls.infobae.replace('{text_to_search}', words, 'gi');
 	};
 
 	return { onSearch };
