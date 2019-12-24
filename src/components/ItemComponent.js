@@ -4,10 +4,10 @@ import { ListItem, ListItemText } from '@material-ui/core';
 
 const useStyles = makeStyles(theme => ({}));
 
-const ItemComponent = () => {
+const ItemComponent = ({ item }) => {
 	return (
 		<ListItem>
-			<ListItemText primary={'Title'} secondary={'Description'}></ListItemText>
+			<ListItemText primary={item} secondary={'Description'}></ListItemText>
 		</ListItem>
 	);
 };

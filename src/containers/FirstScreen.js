@@ -4,6 +4,7 @@ import { CssBaseline, Typography, Container, Paper, Grid } from '@material-ui/co
 import Input from '../components/Input';
 import ButtonComponent from '../components/ButtonComponent';
 import useSearch from '../hooks/useSearch';
+import ListComponent from '../components/ListComponent';
 
 const useStyles = makeStyles(theme => ({
 	root: {
@@ -25,10 +26,12 @@ const FirstScreen = () => {
 	const classes = useStyles();
 	const { onSearch } = useSearch();
 	const [text, setText] = useState('');
+	const [result, setResult] = useState([]);
 
 	const handleSearch = async () => {
-		const result = await onSearch(text);
-		console.log({ result });
+		const response = await onSearch(text);
+		setResult(response);
+		console.log({ response });
 	};
 
 	return (
@@ -62,7 +65,7 @@ const FirstScreen = () => {
 				</Grid>
 			</Grid>
 			<Grid container className={classes.root} spacing={2}>
-				{/* Result list */}
+				<ListComponent result={result} />
 			</Grid>
 		</>
 	);

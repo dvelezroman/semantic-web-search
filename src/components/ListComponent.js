@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { List } from '@material-ui/core';
 import ItemComponent from './ItemComponent';
 
-const useStyles = makeStyles(them => ({
+const useStyles = makeStyles(theme => ({
 	root: {
 		width: '100%',
 		maxWidth: 360,
@@ -11,12 +11,13 @@ const useStyles = makeStyles(them => ({
 	}
 }));
 
-const ListComponent = ({ results }) => {
+const ListComponent = ({ result }) => {
+	console.log({ result });
 	const classes = useStyles();
 	return (
 		<List className={classes.root}>
-			{results.map((item, index) => (
-				<ItemComponent key={index}></ItemComponent>
+			{result.map((item, index) => (
+				<ItemComponent key={index} item={item}></ItemComponent>
 			))}
 		</List>
 	);
