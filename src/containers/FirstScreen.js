@@ -25,6 +25,12 @@ const FirstScreen = () => {
 	const classes = useStyles();
 	const { onSearch } = useSearch();
 	const [text, setText] = useState('');
+
+	const handleSearch = async () => {
+		const result = await onSearch(text);
+		console.log({ result });
+	};
+
 	return (
 		<>
 			<Grid container className={classes.root} spacing={2}>
@@ -42,7 +48,7 @@ const FirstScreen = () => {
 							<ButtonComponent
 								color={'primary'}
 								text='Go get it...'
-								onPress={() => onSearch(text)}
+								onPress={() => handleSearch()}
 							/>
 						</Grid>
 					</Grid>
