@@ -17,8 +17,10 @@ const ItemComponent = ({ item }) => {
 			<ListItem className={classes.item}>
 				<ListItemText primary={item.title} secondary={item.description} />
 				<Grid item>
-					{item.author.length > 1 && <Typography>{`author: ${item.author}`}</Typography>}
-					<Typography>{item.date}</Typography>
+					{item.author.length > 1 && (
+						<Typography variant='body2'>{`author: ${item.author}`}</Typography>
+					)}
+					<Typography variant='body2'>{item.date}</Typography>
 				</Grid>
 			</ListItem>
 			<Divider variant='inset' component='li' />
