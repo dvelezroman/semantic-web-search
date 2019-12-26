@@ -11,13 +11,12 @@ const useStyles = makeStyles(theme => ({
 
 const ItemComponent = ({ item }) => {
 	const classes = useStyles();
-
 	return (
 		<>
 			<ListItem className={classes.item}>
 				<ListItemText primary={item.title} secondary={item.description} />
 				<Grid item>
-					{item.author.length > 1 && (
+					{item?.author?.length > 1 && (
 						<Typography variant='body2'>{`author: ${item.author}`}</Typography>
 					)}
 					<Typography variant='body2'>{item.date}</Typography>

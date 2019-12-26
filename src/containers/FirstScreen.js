@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Typography, Paper, Grid, Box } from '@material-ui/core';
+import { Typography, Grid, Box } from '@material-ui/core';
 import Input from '../components/Input';
 import ButtonComponent from '../components/ButtonComponent';
 import useSearch from '../hooks/useSearch';
@@ -24,15 +24,21 @@ const useStyles = makeStyles(theme => ({
 
 const FirstScreen = () => {
 	const classes = useStyles();
-	const { onSearch } = useSearch();
+	const { onSearch, allTitles } = useSearch();
 	const [text, setText] = useState('');
 	const [result, setResult] = useState([]);
 
+	// useEffect(() => {
+	// 	setResult(allTitles);
+	// }, [allTitles]);
+
+	console.log(allTitles);
+
 	const handleSearch = async () => {
 		if (text !== '') {
-			const response = await onSearch(text);
-			setResult(response);
-			console.log({ response });
+			await onSearch(text);
+			// setResult(response);
+			// console.log({ response });
 		}
 	};
 
@@ -70,7 +76,7 @@ const FirstScreen = () => {
 					</Typography>
 				</Grid>
 				<Grid item xs={12}>
-					<ListComponent result={result} />
+					<ListComponent result={allTitles} />
 				</Grid>
 			</Grid>
 		</>
