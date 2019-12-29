@@ -8,7 +8,8 @@ import ListComponent from '../components/ListComponent';
 
 const useStyles = makeStyles(theme => ({
 	root: {
-		flexGrow: 1
+		flexGrow: 1,
+		width: 600
 	},
 	paper: {
 		height: 140,
