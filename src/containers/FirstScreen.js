@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Typography, Grid, Box } from '@material-ui/core';
 import Input from '../components/Input';
@@ -27,13 +27,11 @@ const FirstScreen = () => {
 	const classes = useStyles();
 	const { onSearch, allTitles } = useSearch();
 	const [text, setText] = useState('');
-	const [result, setResult] = useState([]);
+	// const [result, setResult] = useState([]);
 
 	// useEffect(() => {
 	// 	setResult(allTitles);
 	// }, [allTitles]);
-
-	console.log(allTitles);
 
 	const handleSearch = async () => {
 		if (text !== '') {
