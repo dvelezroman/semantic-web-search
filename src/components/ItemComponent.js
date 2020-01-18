@@ -17,7 +17,9 @@ const ItemComponent = ({ item }) => {
 	const classes = useStyles();
 	const title = (
 		<span>
-			<a href={item.href}>{item.title}</a>
+			<a href={item.href} target='_blank'>
+				{item.title}
+			</a>
 		</span>
 	);
 
