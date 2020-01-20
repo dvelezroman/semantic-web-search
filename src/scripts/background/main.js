@@ -10,18 +10,27 @@ class BackgroundExtension {
 		this.urls = [];
 		this.instances = [];
 		this.DOM = null;
-		if (loop < 2) {
-			this.init();
-		}
+		this.ready = false;
+	}
+
+	validateUrl(url) {
+		if (/(http(s?)):\/\//gi.test(url)) {
+			return true;
+		} else return false;
 	}
 
 	async init() {
-		try {
-			this.DOM = await this.retrievePageDOM(this.url);
-			this.getUrls();
-			this.saveToStorage(this.instances, this.name);
-		} catch (e) {
-			console.log(e.response);
+		if (this.validateUrl(this.url) && this.loop < 2) {
+			try {
+				this.DOM = await this.retrievePageDOM(this.url);
+				this.getUrls();
+				this.saveToStorage(this.instances, this.name);
+			} catch (e) {
+				console.log('[Error] retrieving this site...');
+			}
+		} else {
+			this.ready = true;
+			console.log('no mas...');
 		}
 	}
 
@@ -36,7 +45,7 @@ class BackgroundExtension {
 		);
 	}
 
-	getFromStorage(key) {
+	static getFromStorage(key) {
 		chrome.storage.local.get({ [key]: [] }, function(data) {
 			console.log({ data });
 		});
@@ -56,8 +65,6 @@ class BackgroundExtension {
 	}
 
 	getUrls() {
-		return new Promise();
-
 		const $ = cheerio.load(this.DOM);
 		const config = {
 			selector: 'div > a'
@@ -67,7 +74,11 @@ class BackgroundExtension {
 		aTags.forEach(tag => {
 			const $tag = $(tag);
 			const href = $tag.attr('href');
-			const url = href.includes('https://') ? href : `${this.url}${href}`;
+			let url = '';
+			if (href && href.length) {
+				// url = href.includes('https://') ? href : `${this.url}${href}`;
+				url = this.validateUrl(href) ? href : `${this.url}${href}`;
+			}
 			const title = $tag.text().trim();
 			jsonUrls.push({ name: this.name, from: this.from, url, title });
 			// TODO: this creates another instance from an URL and control by loop increased in one every time
@@ -75,13 +86,15 @@ class BackgroundExtension {
 				{ name: title, url, from: this.name },
 				this.loop + 1
 			);
+			childExtension.init();
 		});
 		this.instances = jsonUrls;
 	}
 }
 
-sites.forEach(site => {
+sites.forEach(async site => {
 	const extension = new BackgroundExtension(site, 0);
+	await extension.init();
 });
 
 // chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
