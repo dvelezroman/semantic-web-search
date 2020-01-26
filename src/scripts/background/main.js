@@ -22,28 +22,49 @@ const getFromStorage = key => {
 	});
 };
 
-const validateUrl = url => {
-	if (/(http(s?)):\/\//gi.test(url)) {
-		return true;
-	} else return false;
+const validateUrl = url => /^(http(s?)):\/\/.+/gi.test(url);
+
+const regexs = {
+	youtube: /(https?\:\/\/)?((www\.)?youtube\.com|youtu\.?be)\/.+$/,
+	tweeter: /.+(twitt(er)?).+/,
+	instagram: /.+(instagram).+/,
+	facebook: /.+(facebook).+/,
+	whatsapp: /.+(whatsapp).+/,
+	telegram: /.+(telegram).+/,
+	pinterest: /.+(pinterest).+/,
+	plus: /.+(plus.google.com).+/,
+	mailto: /.+(mailto).+/
 };
 
-const validateSocialUrl = /^(https?\:\/\/)?((www\.)?youtube\.com|youtu\.?be)\/.+$/;
+const isValidUrl = url => {
+	let isValid = false;
+	Object.keys(regexs).forEach(key => {
+		if (!regexs[key].test(url)) {
+			isValid = true;
+		}
+	});
+	return isValid;
+};
 
-const initProcess = async site => {
-	if (!(site.url in urlDict) && validateUrl(site.url) && !validateSocialUrl.test(site.url)) {
-		try {
-			urlDict[site.url] = true;
-			const { error, data } = await retrieveDOM(site.url);
-			if (error) throw new Error('Error retrieving this site: ' + site.url);
-			doms = doms + 1;
-			const newsInstances = await getUrls(data, site);
-			instances.push(...newsInstances);
-		} catch (e) {
-			console.log(e.message);
+const initProcess = async (site, sprint) => {
+	if (validateUrl(site.url) && isValidUrl(site.url)) {
+		if (!urlDict[site.url]) {
+			console.log(`[SUCCESS] - [${site.url}] is valid`);
+			try {
+				urlDict[site.url] = true;
+				const { error, data } = await retrieveDOM(site.url);
+				if (error) throw new Error('[ERROR] - Error retrieving this site: ' + site.url);
+				doms += 1;
+				const newsInstances = await getUrls(data, site, sprint + 1);
+				instances.push(...newsInstances);
+			} catch (e) {
+				console.log(e.message);
+			}
+		} else {
+			console.log('[ERROR] - Url repeated....');
 		}
 	} else {
-		console.log('Url not valid: ' + site.url);
+		console.log('[ERROR] - Url not valid: ' + site.url);
 	}
 };
 
@@ -61,11 +82,11 @@ const retrieveDOM = url =>
 		request.send();
 	});
 
-const getUrls = (DOM, site) => {
+const getUrls = (DOM, site, sprint) => {
 	// new Promise((resolve, reject) => {
 	const $ = cheerio.load(DOM);
 	const config = {
-		selector: 'div > a'
+		selector: 'div + a'
 	};
 	const aTags = $(config.selector).get();
 	const jsonUrls = [];
@@ -83,8 +104,7 @@ const getUrls = (DOM, site) => {
 			}
 		}
 		const title = $tag.text().trim();
-		const urlInstance = { name: site.name, from: site.url, url, title };
-		console.log({ urlInstance });
+		const urlInstance = { name: site.name, from: site.url, url, title, sprint };
 		jsonUrls.push(urlInstance);
 		// TODO: this creates another instance from an URL and control by loop increased in one every time
 	});
@@ -94,14 +114,17 @@ const getUrls = (DOM, site) => {
 const main = async () => {
 	console.log('Working');
 	for (const site of sites) {
-		await initProcess(site);
+		// this gives the number of sprints
+		await initProcess(site, 0); // sprint one
 	}
 	console.log('Finish...');
 	console.log('Working');
 	for (const site of instances) {
-		await initProcess(site);
+		if (site.sprint <= 1) await initProcess(site, 1);
+		//sprint two
+		else break;
 	}
-	console.log('Finish');
+	console.log('Finished all..');
 	console.log({ doms });
 	console.log({ instances });
 };
