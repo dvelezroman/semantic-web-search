@@ -3,7 +3,7 @@
 	"name": "Ivi semantic search",
 	"manifest_version": 2,
 	// "content_security_policy": "script-src 'self' 'sha256-WDhufSqZOEoWULzS4Nwz11MNyHzZClVYbQ2JSt1vfkw'; object-src 'self'",
-	"permissions": ["tabs", "storage", "https://*/**", "http://*/*"],
+	"permissions": ["tabs", "storage", "unlimitedStorage", "https://*/**", "http://*/*"],
 	"author": "dvelezroman",
 	"version": "0.1.0",
 	"browser_action": {

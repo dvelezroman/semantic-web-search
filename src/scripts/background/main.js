@@ -8,7 +8,7 @@ const urlDict = {};
 const saveToStorage = (newsInstancesArray, key) => {
 	chrome.storage.local.set(
 		{
-			newsInstances: { [key]: newsInstancesArray }
+			[key]: newsInstancesArray
 		},
 		function() {
 			console.log('News were added to list in local storage...');
@@ -55,6 +55,7 @@ const initProcess = async (site, sprint) => {
 				const { error, data } = await retrieveDOM(site.url);
 				if (error) throw new Error('[ERROR] - Error retrieving this site: ' + site.url);
 				doms += 1;
+				site['content'] = getTextContent(data);
 				const newsInstances = await getUrls(data, site, sprint + 1);
 				instances.push(...newsInstances);
 			} catch (e) {
@@ -82,11 +83,29 @@ const retrieveDOM = url =>
 		request.send();
 	});
 
+const getTextContent = DOM => {
+	const $ = cheerio.load(DOM);
+	// TODO: here we ust to make a selector text for every url
+	const textSelector = 'p.element-paragraph';
+	const textContent = [];
+	$(textSelector)
+		.get()
+		.forEach(ptag => {
+			textContent.push(
+				$(ptag)
+					.text()
+					.trim()
+			);
+		});
+	// END TODO: here we ust to make a selector text for every url
+	return textContent.join(' ');
+};
+
 const getUrls = (DOM, site, sprint) => {
 	// new Promise((resolve, reject) => {
 	const $ = cheerio.load(DOM);
 	const config = {
-		selector: 'div + a'
+		selector: 'div > a'
 	};
 	const aTags = $(config.selector).get();
 	const jsonUrls = [];
@@ -97,7 +116,7 @@ const getUrls = (DOM, site, sprint) => {
 		if (href && href.length) {
 			if (validateUrl(href)) {
 				url = href;
-			} else if (href[0] === '/') {
+			} else if (href[0] === '/' || site.url[-1] === '/') {
 				url = `${site.url}${href}`;
 			} else {
 				url = `${site.url}/${href}`;
@@ -105,7 +124,7 @@ const getUrls = (DOM, site, sprint) => {
 		}
 		const title = $tag.text().trim();
 		const urlInstance = { name: site.name, from: site.url, url, title, sprint };
-		jsonUrls.push(urlInstance);
+		if (title !== '') jsonUrls.push(urlInstance);
 		// TODO: this creates another instance from an URL and control by loop increased in one every time
 	});
 	return jsonUrls;
@@ -120,13 +139,19 @@ const main = async () => {
 	console.log('Finish...');
 	console.log('Working');
 	for (const site of instances) {
-		if (site.sprint <= 1) await initProcess(site, 1);
+		if (site.sprint <= 1) {
+			await initProcess(site, 1);
+		}
 		//sprint two
 		else break;
 	}
 	console.log('Finished all..');
+	console.log('Saving....');
+	saveToStorage(instances, 'newsInstances');
+	console.log('Retrieving from localStorage...');
+	getFromStorage('newsInstances');
+
 	console.log({ doms });
-	console.log({ instances });
 };
 
 main();
