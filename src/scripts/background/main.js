@@ -1,24 +1,31 @@
 import cheerio from 'cheerio';
 import sites from '../../resources/sites';
+import useSentiment from '../../hooks/useSentiment';
+import { removeStopWords } from './utilities';
 
 const instances = [];
 let doms = 0;
 const urlDict = {};
 
-const saveToStorage = (newsInstancesArray, key) => {
-	chrome.storage.local.set(
-		{
-			[key]: newsInstancesArray
-		},
-		function() {
-			console.log('News were added to list in local storage...');
-		}
-	);
-};
+const getSentimentScore = text => new Promise((resolve, reject) => {});
+
+const saveToStorage = (newsInstancesArray, key) =>
+	new Promise((resolve, reject) => {
+		chrome.storage.local.set(
+			{
+				[key]: newsInstancesArray
+			},
+			() => {
+				resolve({ msg: 'News were added to list in local storage...', error: false });
+			}
+		);
+	});
 
 const getFromStorage = key => {
-	chrome.storage.local.get({ [key]: [] }, function(data) {
-		console.log({ data });
+	return new Promise((resolve, reject) => {
+		chrome.storage.local.get({ [key]: [] }, data => {
+			resolve(data);
+		});
 	});
 };
 
@@ -146,12 +153,25 @@ const main = async () => {
 		else break;
 	}
 	console.log('Finished all..');
-	console.log('Saving....');
-	saveToStorage(instances, 'newsInstances');
-	console.log('Retrieving from localStorage...');
-	getFromStorage('newsInstances');
-
 	console.log({ doms });
+	console.log('Saving....');
+	const { msg, error } = await saveToStorage(instances, 'newsInstances');
+	console.log({ msg });
+	console.log('Retrieving from localStorage...');
+	const instancesFromLocalStorage = await getFromStorage('newsInstances');
+	//console.log({ instancesFromLocalStorage });
+
+	// now we process the retrieved data
+	const { getScore } = useSentiment();
+	const instancesProcessed = instancesFromLocalStorage.newsInstances.filter(instance => {
+		if (instance.content) {
+			const contentRemovedStopWords = removeStopWords(instance.content);
+			instance['score'] = getScore(contentRemovedStopWords);
+			instance['nonStopWord'] = contentRemovedStopWords;
+			return instance;
+		}
+	});
+	console.log({ instancesProcessed });
 };
 
 main();
