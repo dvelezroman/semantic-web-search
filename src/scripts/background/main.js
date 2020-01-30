@@ -4,6 +4,7 @@ import useSentiment from '../../hooks/useSentiment';
 import { removeStopWords } from './utilities';
 
 const instances = [];
+const news = [];
 let doms = 0;
 const urlDict = {};
 
@@ -53,26 +54,47 @@ const isValidUrl = url => {
 	return isValid;
 };
 
+// {
+// 	siteURL: 'https://wwww.infobae.com',
+// 	name: 'Infobae',
+// 	type: 'home',
+// 	homeNewsSelectors: ['div > div > div.headline.xx-large.normal-style > a'],
+// 	objectDefinition: {
+// 		content: '#article-content > div > div > p',
+// 		author: 'a.author-name',
+// 		date: 'span.byline-date',
+// 		title: 'div > div > header > h1',
+// 		urls: 'div > p > a'
+// 	}
+// }
+
 const initProcess = async (site, sprint) => {
-	if (validateUrl(site.url) && isValidUrl(site.url)) {
-		if (!urlDict[site.url]) {
-			console.log(`[SUCCESS] - [${site.url}] is valid`);
+	if (validateUrl(site.siteURL) && isValidUrl(site.siteURL)) {
+		if (!urlDict[site.siteURL]) {
+			console.log(`[SUCCESS] - [${site.siteURL}] is valid`);
 			try {
-				urlDict[site.url] = true;
-				const { error, data } = await retrieveDOM(site.url);
-				if (error) throw new Error('[ERROR] - Error retrieving this site: ' + site.url);
+				urlDict[site.siteURL] = true;
+				const { error, dom } = await retrieveDOM(site.siteURL);
+				if (error) throw new Error('[ERROR] - Error retrieving this site: ' + site.siteURL);
 				doms += 1;
-				site['content'] = getTextContent(data);
-				const newsInstances = await getUrls(data, site, sprint + 1);
-				instances.push(...newsInstances);
+				if (site.type === 'news') {
+					site.content = getContent(dom, site);
+					site.fetched = true;
+					if (site.content !== '') {
+						news.push({ ...site });
+						site.status = 'No content.';
+					}
+				}
+				const newInstances = await getUrls(dom, site, sprint + 1);
+				instances.push(...newInstances);
 			} catch (e) {
 				console.log(e.message);
 			}
 		} else {
-			console.log('[ERROR] - Url repeated: ' + site.url);
+			console.log('[ERROR] - Url repeated: ' + site.siteURL);
 		}
 	} else {
-		console.log('[ERROR] - Url not valid: ' + site.url);
+		console.log('[ERROR] - Url not valid: ' + site.siteURL);
 	}
 };
 
@@ -81,8 +103,8 @@ const retrieveDOM = url =>
 		const request = new XMLHttpRequest();
 		request.onload = function(e) {
 			if (request.status >= 200 && request.status < 300)
-				resolve({ error: false, data: request.response });
-			else reject({ error: request.statusText, data: null });
+				resolve({ error: false, dom: request.response });
+			else reject({ error: request.statusText, dom: null });
 		};
 
 		request.open('GET', url, true);
@@ -90,31 +112,31 @@ const retrieveDOM = url =>
 		request.send();
 	});
 
-const getTextContent = DOM => {
+const getContent = (DOM, site) => {
 	const $ = cheerio.load(DOM);
-	// TODO: here we ust to make a selector text for every url
-	const textSelector = 'p.element-paragraph';
-	const textContent = [];
-	$(textSelector)
+	const content = [];
+	$(site.objectDefinition.content)
 		.get()
 		.forEach(ptag => {
-			textContent.push(
+			content.push(
 				$(ptag)
 					.text()
 					.trim()
 			);
 		});
-	// END TODO: here we ust to make a selector text for every url
-	return textContent.join(' ');
+	return content.join(' ');
 };
 
 const getUrls = (DOM, site, sprint) => {
 	// new Promise((resolve, reject) => {
 	const $ = cheerio.load(DOM);
-	const config = {
-		selector: 'div > a'
-	};
-	const aTags = $(config.selector).get();
+	let aTags = [];
+	if (site.type === 'home') {
+		aTags = $(site.homeNewsSelector[0]).get();
+		// aTags = [...aTags, $(site.homeNewsSelector[1]).get()];
+	} else {
+		aTags = $(site.objectDefinition.urls).get();
+	}
 	const jsonUrls = [];
 	aTags.forEach(tag => {
 		const $tag = $(tag);
@@ -123,14 +145,23 @@ const getUrls = (DOM, site, sprint) => {
 		if (href && href.length) {
 			if (validateUrl(href)) {
 				url = href;
-			} else if (href[0] === '/' || site.url[-1] === '/') {
-				url = `${site.url}${href}`;
+			} else if (href[0] === '/' || site.siteURL[-1] === '/') {
+				url = `${site.siteURL}${href}`;
 			} else {
-				url = `${site.url}/${href}`;
+				url = `${site.siteURL}/${href}`;
 			}
 		}
-		const title = $tag.text().trim();
-		const urlInstance = { name: site.name, from: site.url, url, title, sprint };
+		const title = $tag.text() && $tag.text().trim();
+		const urlInstance = {
+			name: site.name,
+			from: site.siteURL,
+			siteURL: url.trim(),
+			title,
+			sprint,
+			type: 'news',
+			objectDefinition: site.objectDefinition,
+			fetched: false
+		};
 		if (title !== '') jsonUrls.push(urlInstance);
 		// TODO: this creates another instance from an URL and control by loop increased in one every time
 	});
@@ -144,23 +175,25 @@ const main = async () => {
 		await initProcess(site, 0); // sprint one
 	}
 	console.log('Finish...');
+
 	console.log('Working');
-	for (const site of instances) {
-		if (site.sprint <= 1) {
-			await initProcess(site, 1);
+	for (const instance of instances) {
+		if (instance.sprint <= 1) {
+			await initProcess(instance, 1);
 		}
 		//sprint two
 		else break;
 	}
+
 	console.log('Finished all..');
 	console.log({ doms });
 	console.log('Saving in Local Storage....');
-	const { msg, error } = await saveToStorage(instances, 'newsInstances');
+	const { msg, error } = await saveToStorage(news, 'newsInstances');
 	console.log({ msg });
 	console.log('Retrieving from localStorage...');
 	const instancesFromLocalStorage = await getFromStorage('newsInstances');
-	//console.log({ instancesFromLocalStorage });
-
+	// console.log({ instancesFromLocalStorage });
+	console.log({ news });
 	// now we process the retrieved data
 	console.log('Proccessing...');
 	const { getScore, extractTopics } = useSentiment();
