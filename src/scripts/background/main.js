@@ -69,7 +69,7 @@ const initProcess = async (site, sprint) => {
 				console.log(e.message);
 			}
 		} else {
-			console.log('[ERROR] - Url repeated....');
+			console.log('[ERROR] - Url repeated: ' + site.url);
 		}
 	} else {
 		console.log('[ERROR] - Url not valid: ' + site.url);
@@ -154,7 +154,7 @@ const main = async () => {
 	}
 	console.log('Finished all..');
 	console.log({ doms });
-	console.log('Saving....');
+	console.log('Saving in Local Storage....');
 	const { msg, error } = await saveToStorage(instances, 'newsInstances');
 	console.log({ msg });
 	console.log('Retrieving from localStorage...');
@@ -162,12 +162,16 @@ const main = async () => {
 	//console.log({ instancesFromLocalStorage });
 
 	// now we process the retrieved data
-	const { getScore } = useSentiment();
+	console.log('Proccessing...');
+	const { getScore, extractTopics } = useSentiment();
 	const instancesProcessed = instancesFromLocalStorage.newsInstances.filter(instance => {
 		if (instance.content) {
 			const contentRemovedStopWords = removeStopWords(instance.content);
+			const topicsExtracted = extractTopics(instance.content);
+
 			instance['score'] = getScore(contentRemovedStopWords);
 			instance['nonStopWord'] = contentRemovedStopWords;
+			instance['topic'];
 			return instance;
 		}
 	});

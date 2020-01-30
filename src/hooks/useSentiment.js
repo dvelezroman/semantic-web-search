@@ -1,4 +1,5 @@
 import sentiment from 'multilang-sentiment';
+import nlp from 'compromise';
 
 const useSentiment = () => {
 	const getScore = (text, lang) => {
@@ -6,7 +7,13 @@ const useSentiment = () => {
 		return score;
 	};
 
-	return { getScore };
+	const extractTopics = text => {
+		return nlp(text)
+			.normalize()
+			.topics();
+	};
+
+	return { getScore, extractTopics };
 };
 
 export default useSentiment;
