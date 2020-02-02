@@ -1,8 +1,7 @@
 {
 	"short_name": "Ivi Search",
-	"name": "Ivi semantic search",
+	"name": "webp2p",
 	"manifest_version": 2,
-	// "content_security_policy": "script-src 'self' 'sha256-WDhufSqZOEoWULzS4Nwz11MNyHzZClVYbQ2JSt1vfkw'; object-src 'self'",
 	"permissions": ["tabs", "storage", "unlimitedStorage", "https://*/**", "http://*/*"],
 	"author": "dvelezroman",
 	"version": "0.1.0",
@@ -11,12 +10,16 @@
 		"default_title": "Ivi Widget"
 	},
 	"background": {
-		"scripts": ["scripts/background/main.js"],
-		"persistent": false
+		"scripts": ["scripts/background/main.js"]
 	},
 	"icons": {
 		"16": "favicon.ico",
 		"48": "logo192.png",
 		"128": "logo512.png"
+	},
+	"applications": {
+		"gecko": {
+			"id": "webp2p@oncosmos.com"
+		}
 	}
 }

@@ -1,14 +1,46 @@
 import cheerio from 'cheerio';
+import browser from 'webextension-polyfill';
+import { NewsP2P } from '../background/webp2p';
 import sites from '../../resources/sites';
 import useSentiment from '../../hooks/useSentiment';
 import { removeStopWords } from './utilities';
+
+const loadUsersCustom = async event => {
+	try {
+		console.log('loadUsersCustom');
+		let listaUsuarios = p2pExtension.getDataCallBack();
+		console.log({ listaUsuarios });
+		// TODO: guardar al LOCAL STORAGE
+		chrome.storage.local.set({
+			peers: listaUsuarios
+		});
+		// if (listaUsuarios != null || listaUsuarios != undefined || listaUsuarios !== 'undefined') {
+		// 	let usuarios = document.getElementById('listusers');
+		// 	let optionOne = new Option('All', 'All');
+		// 	usuarios.options.length = 0;
+		// 	usuarios.options[usuarios.options.length] = optionOne;
+		// 	for (let i in listaUsuarios) {
+		// 		if (listaUsuarios.hasOwnProperty(i)) {
+		// 			console.log('Key is: ' + i + '. Value is: ' + listaUsuarios[i]);
+		// 			let optionNew = new Option(listaUsuarios[i].username, listaUsuarios[i].username);
+		// 			usuarios.options[usuarios.options.length] = optionNew;
+		// 		}
+		// 	}
+		// }
+	} catch (e) {
+		console.log('Error al cargar lista de usuarios');
+		console.log(e);
+	}
+};
+
+var p2pExtension = new NewsP2P();
+p2pExtension.connect();
+p2pExtension.getPeers(loadUsersCustom);
 
 const instances = [];
 const news = [];
 let doms = 0;
 const urlDict = {};
-
-const getSentimentScore = text => new Promise((resolve, reject) => {});
 
 const saveToStorage = (newsInstancesArray, key) =>
 	new Promise((resolve, reject) => {
@@ -17,7 +49,7 @@ const saveToStorage = (newsInstancesArray, key) =>
 				[key]: newsInstancesArray
 			},
 			() => {
-				resolve({ msg: 'News were added to list in local storage...', error: false });
+				resolve({ msg: 'Data was saved in Local Storage...', error: false });
 			}
 		);
 	});
@@ -25,7 +57,7 @@ const saveToStorage = (newsInstancesArray, key) =>
 const getFromStorage = key => {
 	return new Promise((resolve, reject) => {
 		chrome.storage.local.get({ [key]: [] }, data => {
-			resolve(data);
+			resolve({ msg: 'Data retrieved', data, error: false });
 		});
 	});
 };
@@ -53,20 +85,6 @@ const isValidUrl = url => {
 	});
 	return isValid;
 };
-
-// {
-// 	siteURL: 'https://wwww.infobae.com',
-// 	name: 'Infobae',
-// 	type: 'home',
-// 	homeNewsSelectors: ['div > div > div.headline.xx-large.normal-style > a'],
-// 	objectDefinition: {
-// 		content: '#article-content > div > div > p',
-// 		author: 'a.author-name',
-// 		date: 'span.byline-date',
-// 		title: 'div > div > header > h1',
-// 		urls: 'div > p > a'
-// 	}
-// }
 
 const initProcess = async (site, sprint) => {
 	if (validateUrl(site.siteURL) && isValidUrl(site.siteURL)) {
@@ -163,52 +181,65 @@ const getUrls = (DOM, site, sprint) => {
 			fetched: false
 		};
 		if (title !== '') jsonUrls.push(urlInstance);
-		// TODO: this creates another instance from an URL and control by loop increased in one every time
 	});
 	return jsonUrls;
 };
 
-const main = async () => {
-	console.log('Working');
+export const scrapping = async siteName => {
+	console.log('Working =============================');
+	console.log(`I have to scrap: ${siteName} site(s)`);
 	for (const site of sites) {
 		// this gives the number of sprints
-		await initProcess(site, 0); // sprint one
+		if (siteName === 'All' || siteName === site.name) {
+			await initProcess(site, 0); // sprint one
+		}
 	}
-	console.log('Finish...');
-
-	console.log('Working');
+	console.log('=======================================================');
+	console.log(`[INFO] - Finished the first scrap over the home of ${siteName}`);
+	console.log('=======================================================');
+	console.log(
+		`[INFO] - Working on the scrapping over the Url retrieved from home page of ${siteName}`
+	);
 	for (const instance of instances) {
 		if (instance.sprint <= 1) {
 			await initProcess(instance, 1);
-		}
-		//sprint two
-		else break;
+		} else break;
 	}
-
-	console.log('Finished all..');
-	console.log({ doms });
-	console.log('Saving in Local Storage....');
+	console.log('=======================================================');
+	console.log('[INFO] - Finished the scrapping..');
+	console.log(`[INFO] - ${doms} DOMS were processed.`);
+	// console.log('Saving in Local Storage....');
 	const { msg, error } = await saveToStorage(news, 'newsInstances');
-	console.log({ msg });
-	console.log('Retrieving from localStorage...');
+	// console.log({ msg });
+	// console.log('Retrieving from localStorage...');
 	const instancesFromLocalStorage = await getFromStorage('newsInstances');
-	// console.log({ instancesFromLocalStorage });
-	console.log({ news });
+	console.log({ instancesFromLocalStorage });
+	// console.log({ news });
 	// now we process the retrieved data
-	console.log('Proccessing...');
+	console.log('=======================================================');
+	console.log('[INFO] - Proccessing the extracted data...');
 	const { getScore, extractTopics } = useSentiment();
-	const instancesProcessed = instancesFromLocalStorage.newsInstances.filter(instance => {
+	const instancesProcessed = instancesFromLocalStorage.data.newsInstances.filter(instance => {
 		if (instance.content) {
 			const contentRemovedStopWords = removeStopWords(instance.content);
-			const topicsExtracted = extractTopics(instance.content);
+			const topicsExtracted = extractTopics(contentRemovedStopWords);
 
 			instance['score'] = getScore(contentRemovedStopWords);
 			instance['nonStopWord'] = contentRemovedStopWords;
-			instance['topic'];
+			instance['topic'] = topicsExtracted;
 			return instance;
 		}
 	});
-	console.log({ instancesProcessed });
+	console.log('=======================================================');
+	console.log(
+		'[INFO] - Finished the process to extracted data, now I send the data through a  response.'
+	);
+	return instancesProcessed;
 };
 
-main();
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+	if (message.type === 'send') {
+		console.log(message.data);
+		p2pExtension.sendRequest({ automatic: true, info: message.data.job }, message.data.peer);
+	}
+});
