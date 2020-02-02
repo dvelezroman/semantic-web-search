@@ -30,7 +30,7 @@ export default function SelectComponentJobs({ name, options, handleChange, selec
 						id: `${name}-native-simple`
 					}}
 				>
-					{allOption && <option value='Select'>{`Select`}</option>}
+					{allOption && <option value='All'>{`All the jobs`}</option>}
 					{options.map(option => {
 						return <option value={option.name}>{`Job to process: ${option.name}`}</option>;
 					})}

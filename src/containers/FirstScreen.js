@@ -39,25 +39,21 @@ const FirstScreen = () => {
 	}, []);
 
 	const classes = useStyles();
-	const { onSearch, allTitles } = useSearch();
+	// const { onSearch, allTitles } = useSearch();
 	const [peers, setPeers] = useState([]);
 	const [selectedPeer, setSelectedPeer] = useState('All');
-	const [selectedJob, setSelectedJob] = useState('Select');
+	const [selectedJob, setSelectedJob] = useState('All');
 
 	const handleSendAction = () => {
-		if (selectedJob !== 'Select') {
-			const data = {
-				peer: selectedPeer,
-				job: selectedJob
-			};
+		const data = {
+			peer: selectedPeer,
+			job: selectedJob
+		};
 
-			browser.runtime.sendMessage({
-				type: 'send',
-				data
-			});
-		} else {
-			alert('You have to select one job for a selected peer to process.');
-		}
+		browser.runtime.sendMessage({
+			type: 'send',
+			data
+		});
 	};
 
 	return (
@@ -104,16 +100,16 @@ const FirstScreen = () => {
 				</Grid>
 			</Grid>
 			<Grid container className={classes.root} spacing={2}>
-				<Grid item xs={12}>
-					{/* <Typography component='div'>
+				{/* <Grid item xs={12}>
+					<Typography component='div'>
 						<Box color='black' fontWeight='fontWeightBold' fontSize={24} m={1}>
 							Results
 						</Box>
-					</Typography> */}
+					</Typography>
 				</Grid>
 				<Grid item xs={12}>
 					<ListComponent result={allTitles} />
-				</Grid>
+				</Grid> */}
 			</Grid>
 		</>
 	);

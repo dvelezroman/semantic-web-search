@@ -5,43 +5,43 @@ import sites from '../../resources/sites';
 import useSentiment from '../../hooks/useSentiment';
 import { removeStopWords } from './utilities';
 
+const regexs = {
+	youtube: /(https?\:\/\/)?((www\.)?youtube\.com|youtu\.?be)\/.+$/,
+	tweeter: /.+(twitt(er)?).+/,
+	instagram: /.+(instagram).+/,
+	facebook: /.+(facebook).+/,
+	whatsapp: /.+(whatsapp).+/,
+	telegram: /.+(telegram).+/,
+	pinterest: /.+(pinterest).+/,
+	plus: /.+(plus.google.com).+/,
+	mailto: /.+(mailto).+/,
+	spotify: /.+(spotify).+/,
+	linkedin: /.+(linkedin).+/
+};
+
 const loadUsersCustom = async event => {
 	try {
-		console.log('loadUsersCustom');
 		let listaUsuarios = p2pExtension.getDataCallBack();
-		console.log({ listaUsuarios });
 		// TODO: guardar al LOCAL STORAGE
 		chrome.storage.local.set({
 			peers: listaUsuarios
 		});
-		// if (listaUsuarios != null || listaUsuarios != undefined || listaUsuarios !== 'undefined') {
-		// 	let usuarios = document.getElementById('listusers');
-		// 	let optionOne = new Option('All', 'All');
-		// 	usuarios.options.length = 0;
-		// 	usuarios.options[usuarios.options.length] = optionOne;
-		// 	for (let i in listaUsuarios) {
-		// 		if (listaUsuarios.hasOwnProperty(i)) {
-		// 			console.log('Key is: ' + i + '. Value is: ' + listaUsuarios[i]);
-		// 			let optionNew = new Option(listaUsuarios[i].username, listaUsuarios[i].username);
-		// 			usuarios.options[usuarios.options.length] = optionNew;
-		// 		}
-		// 	}
-		// }
 	} catch (e) {
 		console.log('Error al cargar lista de usuarios');
 		console.log(e);
 	}
 };
 
+// load a new instance of NewsP2P class
 var p2pExtension = new NewsP2P();
 p2pExtension.connect();
 p2pExtension.getPeers(loadUsersCustom);
-
+// set the global vars
 const instances = [];
 const news = [];
 let doms = 0;
 const urlDict = {};
-
+// save to local storage
 const saveToStorage = (newsInstancesArray, key) =>
 	new Promise((resolve, reject) => {
 		chrome.storage.local.set(
@@ -53,7 +53,7 @@ const saveToStorage = (newsInstancesArray, key) =>
 			}
 		);
 	});
-
+// get from local Storage
 const getFromStorage = key => {
 	return new Promise((resolve, reject) => {
 		chrome.storage.local.get({ [key]: [] }, data => {
@@ -64,18 +64,6 @@ const getFromStorage = key => {
 
 const validateUrl = url => /^(http(s?)):\/\/.+/gi.test(url);
 
-const regexs = {
-	youtube: /(https?\:\/\/)?((www\.)?youtube\.com|youtu\.?be)\/.+$/,
-	tweeter: /.+(twitt(er)?).+/,
-	instagram: /.+(instagram).+/,
-	facebook: /.+(facebook).+/,
-	whatsapp: /.+(whatsapp).+/,
-	telegram: /.+(telegram).+/,
-	pinterest: /.+(pinterest).+/,
-	plus: /.+(plus.google.com).+/,
-	mailto: /.+(mailto).+/
-};
-
 const isValidUrl = url => {
 	let isValid = false;
 	Object.keys(regexs).forEach(key => {
@@ -85,7 +73,7 @@ const isValidUrl = url => {
 	});
 	return isValid;
 };
-
+// Init Process
 const initProcess = async (site, sprint) => {
 	if (validateUrl(site.siteURL) && isValidUrl(site.siteURL)) {
 		if (!urlDict[site.siteURL]) {
@@ -186,6 +174,7 @@ const getUrls = (DOM, site, sprint) => {
 };
 
 export const scrapping = async siteName => {
+	const startScrap = performance.now();
 	console.log('Working =============================');
 	console.log(`I have to scrap: ${siteName} site(s)`);
 	for (const site of sites) {
@@ -213,9 +202,10 @@ export const scrapping = async siteName => {
 	// console.log({ msg });
 	// console.log('Retrieving from localStorage...');
 	const instancesFromLocalStorage = await getFromStorage('newsInstances');
-	console.log({ instancesFromLocalStorage });
+	const endScrap = performance.now();
 	// console.log({ news });
 	// now we process the retrieved data
+	const startProcess = performance.now();
 	console.log('=======================================================');
 	console.log('[INFO] - Proccessing the extracted data...');
 	const { getScore, extractTopics } = useSentiment();
@@ -234,12 +224,18 @@ export const scrapping = async siteName => {
 	console.log(
 		'[INFO] - Finished the process to extracted data, now I send the data through a  response.'
 	);
-	return instancesProcessed;
+	const endProcess = performance.now();
+	const scrapTime = endScrap - startScrap;
+	const processTime = endProcess - startProcess;
+	return {
+		instancesProcessed,
+		scrapTime,
+		processTime
+	};
 };
 
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	if (message.type === 'send') {
-		console.log(message.data);
 		p2pExtension.sendRequest({ automatic: true, info: message.data.job }, message.data.peer);
 	}
 });

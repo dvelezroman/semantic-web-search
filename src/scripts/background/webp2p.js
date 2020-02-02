@@ -70,15 +70,12 @@ export class NewsP2P extends AbstractP2PExtensionBackground {
       let msg = {'data':news};
       return msg;
       */
-		const start = performance.now();
-		const dataScrapped = await scrapping(extractor.info);
-		console.log({ extractor });
-		console.log('Data scrapped ========================');
-		console.log({ dataScrapped });
-		console.log('Scrappie y procesé la data, ahora la envío al Peer: ', peer);
-		const end = performance.now();
-		const timeElapsed = end - start;
-		console.log(`The process took ${timeElapsed} miliseconds.`);
-		this.sendResponse({ data: { dataScrapped, timeElapsed } }, peer);
+		const { instancesProcessed, scrapTime, processTime } = await scrapping(extractor.info);
+		console.log('Data scrapped ======================================================');
+		console.log({ instancesProcessed });
+		console.log('[INFO] - Terminó el proceso, ahora la devuelvo al Peer: ', peer);
+		console.log(`[INFO] - The process took ${scrapTime} miliseconds.`);
+		console.log(`[INFO] - The process took ${processTime} miliseconds.`);
+		this.sendResponse({ data: { instancesProcessed, scrapTime, processTime } }, peer);
 	}
 }
