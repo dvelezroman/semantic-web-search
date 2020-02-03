@@ -31,18 +31,49 @@ const sites = [
 		siteURL: 'https://www.lanacion.com.ar',
 		name: 'La Nacion',
 		type: 'home',
-		homeNewsSelector: ['article > h1 > a'],
+		homeNewsSelector: ['article > h2 > a'],
 		objectDefinition: {
 			content: '#cuerpo > p.capital',
 			author: '#cuerpo > div.barra > section > section > a',
-			date: '#cuerpo > div.barra > div > section.fecha',
-			title: '#nota > section.encabezado > h1',
+			date: 'div.barra > div > section.fecha',
+			title: 'section.encabezado > h1',
+			urls: 'section > div > article > h2 > a'
+		}
+	},
+	{
+		siteURL: 'https://actualidad.rt.com',
+		name: 'RT',
+		type: 'home',
+		homeNewsSelector: [
+			'body > div > main > div > section > div > div > div > div > article > div. > div > div > div > a'
+		],
+		objectDefinition: {
+			content:
+				'body > div > main > div > section > div > div > div > div > div > div > div > div > p',
+			author: 'div > section > section > a',
+			date:
+				'body > div > main > div > section > div > div > div > div > div > div > div > div > time',
+			title:
+				'body > div > main > div > section > div > div > div > div > div > div > div > div > h1',
 			urls:
-				'#cuerpo > section.listado.ademas.redaccion.notas4.floatFix > div:nth-child(2) > article > h2 > a'
+				'body > div > main > div > section > div > div > div > div > div > div > div > div > p > a'
+		}
+	},
+	{
+		siteURL: 'https:/www.eluniverso.com',
+		name: 'ElUniverso',
+		type: 'home',
+		homeNewsSelector: ['div > div > div > div > div > div > div > div > h2 > a'],
+		objectDefinition: {
+			content:
+				'div > div > div > div > div > div > div > div > div > div > div > div > div > div > p',
+			author: '',
+			date: 'div > div > div > div > div > div > div > div > div > div > div > div > span',
+			title: 'div > div > div > div > div > div > h1',
+			urls:
+				'div > div > div > div > div > div > div > div > div > div > div > ul > li > div > span > a'
 		}
 	}
-	// { from: 'origin', name: 'RT', url: 'https://actualidad.rt.com' },
-	// { from: 'origin', name: 'El Universo', url: 'https://www.eluniverso.com' },
 	// { from: 'origin', name: 'El Comercio', url: 'https://www.elcomercio.com' },
 	// { from: 'origin', name: 'CNN en Español', url: 'https://cnnespanol.cnn.com' }
 ];

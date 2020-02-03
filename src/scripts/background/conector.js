@@ -387,14 +387,8 @@ export class AbstractP2PExtensionBackground {
 						console.log(msj_data.data);
 						let msjRemote = msj_data.data;
 						if (msjRemote.data.automatic) {
-							console.log('auditar');
-							//let answer = this.conector.getExtension().automaticProcessing(msjRemote.data, msjRemote.source);
-							//let msg = {'data':'algo'};
-							//this.sendResponse(answer,msjRemote.source);
 							this.automaticProcessing(msjRemote.data, msjRemote.source);
 						} else {
-							//this.conector.getExtension().processRequest(msjRemote.data, msjRemote.source);
-							//Como es por herencia la instancia hija implementa processrequest
 							this.processRequest(msjRemote.data, msjRemote.source);
 						}
 					} catch (error) {
@@ -454,6 +448,10 @@ export class AbstractP2PExtensionBackground {
 			'Request'
 		);
 		console.log('Sent Request');
+	}
+
+	sendLocalRequest(job) {
+		scrapping(job);
 	}
 
 	getDataCallBack() {

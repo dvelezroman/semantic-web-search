@@ -173,22 +173,25 @@ const getUrls = (DOM, site, sprint) => {
 	return jsonUrls;
 };
 
-export const scrapping = async siteName => {
+export const scrapping = async (data, numJobs = sites.length) => {
+	console.log({ numJobs });
+	const siteName = data.info;
+	const group = data.group ? data.group : null;
+
 	const startScrap = performance.now();
 	console.log('Working =============================');
-	console.log(`I have to scrap: ${siteName} site(s)`);
-	for (const site of sites) {
+	const sitesToScrap = sites.slice(0, numJobs);
+
+	for (const site of sitesToScrap) {
 		// this gives the number of sprints
 		if (siteName === 'All' || siteName === site.name) {
 			await initProcess(site, 0); // sprint one
 		}
 	}
 	console.log('=======================================================');
-	console.log(`[INFO] - Finished the first scrap over the home of ${siteName}`);
+	console.log(`[INFO] - Finished the first scrap over the homes`);
 	console.log('=======================================================');
-	console.log(
-		`[INFO] - Working on the scrapping over the Url retrieved from home page of ${siteName}`
-	);
+	console.log(`[INFO] - Working on the scrapping over the Url retrieved from home pages`);
 	for (const instance of instances) {
 		if (instance.sprint <= 1) {
 			await initProcess(instance, 1);
@@ -227,15 +230,44 @@ export const scrapping = async siteName => {
 	const endProcess = performance.now();
 	const scrapTime = endScrap - startScrap;
 	const processTime = endProcess - startProcess;
+	const totalTime = scrapTime + processTime;
 	return {
 		instancesProcessed,
 		scrapTime,
-		processTime
+		processTime,
+		totalTime,
+		group
 	};
+};
+
+const localScrapping = async numJobs => {
+	console.log('[INFO] - The process selected is local.');
+	const dataProcessed = await scrapping({ info: 'All' }, numJobs);
+	console.log('=========================================');
+	console.log(`[INFO] - The scrapping was done locally.`);
+	console.log({ dataProcessed });
 };
 
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	if (message.type === 'send') {
-		p2pExtension.sendRequest({ automatic: true, info: message.data.job }, message.data.peer);
+		p2pExtension.sendRequest(
+			{
+				data: {
+					automatic: true,
+					info: message.data.job,
+					group: message.data.group ? message.data.group : null
+				},
+				automatic: true
+			},
+			message.data.peer
+		);
+
+		// p2pExtension.sendRequest({
+		// 	data: { automatic: true, info: message.data.job }, automatic: true },
+		// 	usuario
+		// );
+	}
+	if (message.type === 'local') {
+		localScrapping(message.data.numJobs);
 	}
 });

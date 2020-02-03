@@ -1,4 +1,5 @@
 import { AbstractP2PExtensionBackground } from './conector';
+import browser from 'webextension-polyfill';
 import { scrapping } from './main';
 
 export class NewsP2P extends AbstractP2PExtensionBackground {
@@ -60,6 +61,10 @@ export class NewsP2P extends AbstractP2PExtensionBackground {
 	}
 
 	receiveResponse(msg, peer) {
+		// msg.data
+		if (msg.data.type === 'group') {
+			// TODO: enviar al listener del front
+		}
 		console.log('Receive data');
 		console.log(msg);
 	}
@@ -70,12 +75,18 @@ export class NewsP2P extends AbstractP2PExtensionBackground {
       let msg = {'data':news};
       return msg;
       */
-		const { instancesProcessed, scrapTime, processTime } = await scrapping(extractor.info);
+		const { instancesProcessed, scrapTime, processTime, totalTime, group } = await scrapping(
+			extractor.data
+		); // data.info
+
 		console.log('Data scrapped ======================================================');
 		console.log({ instancesProcessed });
 		console.log('[INFO] - Terminó el proceso, ahora la devuelvo al Peer: ', peer);
 		console.log(`[INFO] - The process took ${scrapTime} miliseconds.`);
 		console.log(`[INFO] - The process took ${processTime} miliseconds.`);
-		this.sendResponse({ data: { instancesProcessed, scrapTime, processTime } }, peer);
+		this.sendResponse(
+			{ data: { instancesProcessed, scrapTime, processTime, totalTime, group }, automatic: true },
+			peer
+		);
 	}
 }
