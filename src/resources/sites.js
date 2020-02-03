@@ -60,7 +60,7 @@ const sites = [
 		}
 	},
 	{
-		siteURL: 'https:/www.eluniverso.com',
+		siteURL: 'https://www.eluniverso.com',
 		name: 'ElUniverso',
 		type: 'home',
 		homeNewsSelector: ['div > div > div > div > div > div > div > div > h2 > a'],
