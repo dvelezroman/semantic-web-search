@@ -44,15 +44,18 @@ const initProcess = async (site, sprint) => {
 	if (validateUrl(site.siteURL) && isValidUrl(site.siteURL)) {
 		const instancesRetrieved = await LocalStorage.getItem('newsInstances');
 		const exists = await LocalStorage.findItem(instancesRetrieved, site.siteURL);
-		console.log({ exists })
-		if (!urlDict[site.siteURL]) {
-			console.log(`[SUCCESS] - [${site.siteURL}] is valid`);
+		if (!exists) {
 			try {
 				urlDict[site.siteURL] = true;
 				const { error, dom } = await retrieveDOM(site.siteURL);
 				if (error) throw new Error('[ERROR] - Error retrieving this site: ' + site.siteURL);
 				doms += 1;
 				if (site.type === 'news') {
+					site.home = sprint === 1;
+					if (sprint === 1) { // is in HOME
+						site.inHomeFrom = moment().format('YYYY/MM/DD');
+						site.inHomeUntil = moment().format('YYYY/MM/DD');
+					}
 					site.content = getContent(dom, site);
 					site.fetched = true;
 					site.date = getDate(dom, site);
@@ -67,7 +70,10 @@ const initProcess = async (site, sprint) => {
 				console.log(e.message);
 			}
 		} else {
-			console.log('[ERROR] - Url repeated: ' + site.siteURL);
+			if (sprint === 1) {
+				site.inHomeUntil = moment();
+			}
+			console.log('[INFO] - This news is already stored in LocalStorage: ' + site.siteURL);
 		}
 	} else {
 		console.log('[ERROR] - Url not valid: ' + site.siteURL);
@@ -116,8 +122,7 @@ const getDate = (DOM, site) => {
 	const parsedDate = moment(date[0].replace(' de ', ' '), format, 'es')
 		.locale('en')
 		.format('YYYY/MM/DD');//format
-	console.log({ parsedDate })
-	return 'N/D'
+	return parsedDate
 }
 
 const getUrls = (DOM, site, sprint) => {
@@ -161,6 +166,7 @@ const getUrls = (DOM, site, sprint) => {
 };
 
 export const scrapping = async (data, numJobs = sites.length) => {
+	// LocalStorage.clearStorage();
 	console.log({ numJobs });
 	const siteName = data.info;
 	const group = data.group ? data.group : null;
@@ -188,7 +194,7 @@ export const scrapping = async (data, numJobs = sites.length) => {
 	console.log('[INFO] - Finished the scrapping..');
 	console.log(`[INFO] - ${doms} DOMS were processed.`);
 	console.log('Saving in Local Storage....');
-	const { msg, error } = await LocalStorage.setItem('newsInstances', news) // await saveToStorage(news, 'newsInstances');
+	const { msg, error } = await LocalStorage.setItem(news) // await saveToStorage(news, 'newsInstances');
 	// console.log({ msg });
 	console.log('Retrieving from localStorage...');
 	const instancesFromLocalStorage = await LocalStorage.getItem('newsInstances');
