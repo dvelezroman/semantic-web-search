@@ -19,10 +19,11 @@ class LocalStorage {
         });
         }
 
-    static findItem(url) {
-        const instances = this.getItem('newsInstances');
-        const exists = instances.data.newsInstances.filter(instance => instance.siteURL === url)
-        return exists.length > 0;
+    static findItem(instances, url) {
+        return new Promise((resolve, reject) => {
+            const exists = instances && instances.data && instances.data.newsInstances.filter(instance => instance.siteURL === url)
+            resolve(Array.isArray(exists) && exists.length > 0)
+        })
     }
 
     static dropItem(key) { return new Promise((resolve, reject) => {

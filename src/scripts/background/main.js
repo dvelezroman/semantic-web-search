@@ -42,9 +42,9 @@ const isValidUrl = url => {
 // Init Process
 const initProcess = async (site, sprint) => {
 	if (validateUrl(site.siteURL) && isValidUrl(site.siteURL)) {
-		if (LocalStorage.findItem(site.siteURL)) {
-			console.log('This site already exists in LocalStorage..so it must updates its information.')
-		}
+		const instancesRetrieved = await LocalStorage.getItem('newsInstances');
+		const exists = await LocalStorage.findItem(instancesRetrieved, site.siteURL);
+		console.log({ exists })
 		if (!urlDict[site.siteURL]) {
 			console.log(`[SUCCESS] - [${site.siteURL}] is valid`);
 			try {
