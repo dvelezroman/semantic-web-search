@@ -7,7 +7,7 @@ const sites = [
 		objectDefinition: {
 			content: '#article-content > div > div > p',
 			author: 'a.author-name',
-			date: 'span.byline-date',
+			date: 'span.byline-date', // parsear con moment segun el formato de la fecha de la noticia
 			title: 'div > div > header > h1',
 			urls: 'div > p > a'
 		}

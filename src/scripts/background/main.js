@@ -1,9 +1,12 @@
 import cheerio from 'cheerio';
 import browser from 'webextension-polyfill';
-import { NewsP2P } from '../background/webp2p';
 import sites from '../../resources/sites';
 import useSentiment from '../../hooks/useSentiment';
 import { removeStopWords } from './utilities';
+import moment from 'moment';
+import LocalStorage from '../../business/LocalStorage';
+
+// const browser = window.browser || window.chrome;
 
 const regexs = {
 	youtube: /(https?\:\/\/)?((www\.)?youtube\.com|youtu\.?be)\/.+$/,
@@ -19,48 +22,11 @@ const regexs = {
 	linkedin: /.+(linkedin).+/
 };
 
-const loadUsersCustom = async event => {
-	try {
-		let listaUsuarios = p2pExtension.getDataCallBack();
-		// TODO: guardar al LOCAL STORAGE
-		chrome.storage.local.set({
-			peers: listaUsuarios
-		});
-	} catch (e) {
-		console.log('Error al cargar lista de usuarios');
-		console.log(e);
-	}
-};
-
-// load a new instance of NewsP2P class
-var p2pExtension = new NewsP2P();
-p2pExtension.connect();
-p2pExtension.getPeers(loadUsersCustom);
 // set the global vars
 const instances = [];
 const news = [];
 let doms = 0;
 const urlDict = {};
-// save to local storage
-const saveToStorage = (newsInstancesArray, key) =>
-	new Promise((resolve, reject) => {
-		chrome.storage.local.set(
-			{
-				[key]: newsInstancesArray
-			},
-			() => {
-				resolve({ msg: 'Data was saved in Local Storage...', error: false });
-			}
-		);
-	});
-// get from local Storage
-const getFromStorage = key => {
-	return new Promise((resolve, reject) => {
-		chrome.storage.local.get({ [key]: [] }, data => {
-			resolve({ msg: 'Data retrieved', data, error: false });
-		});
-	});
-};
 
 const validateUrl = url => /^(http(s?)):\/\/.+/gi.test(url);
 
@@ -76,6 +42,9 @@ const isValidUrl = url => {
 // Init Process
 const initProcess = async (site, sprint) => {
 	if (validateUrl(site.siteURL) && isValidUrl(site.siteURL)) {
+		if (LocalStorage.findItem(site.siteURL)) {
+			console.log('This site already exists in LocalStorage..so it must updates its information.')
+		}
 		if (!urlDict[site.siteURL]) {
 			console.log(`[SUCCESS] - [${site.siteURL}] is valid`);
 			try {
@@ -86,12 +55,13 @@ const initProcess = async (site, sprint) => {
 				if (site.type === 'news') {
 					site.content = getContent(dom, site);
 					site.fetched = true;
+					site.date = getDate(dom, site);
 					if (site.content !== '') {
 						news.push({ ...site });
 						site.status = 'No content.';
 					}
 				}
-				const newInstances = await getUrls(dom, site, sprint + 1);
+				const newInstances = getUrls(dom, site, sprint + 1);
 				instances.push(...newInstances);
 			} catch (e) {
 				console.log(e.message);
@@ -132,6 +102,23 @@ const getContent = (DOM, site) => {
 		});
 	return content.join(' ');
 };
+
+const getDate = (DOM, site) => {
+	const $ = cheerio.load(DOM);
+	const date = [];
+	const format = 'Do MMMM YYYY';
+    //Parse in spanish and convert it in english
+	
+	$(site.objectDefinition.date)
+		.get().forEach(dtag => {
+			date.push($(dtag).text())
+		})
+	const parsedDate = moment(date[0].replace(' de ', ' '), format, 'es')
+		.locale('en')
+		.format('YYYY/MM/DD');//format
+	console.log({ parsedDate })
+	return 'N/D'
+}
 
 const getUrls = (DOM, site, sprint) => {
 	// new Promise((resolve, reject) => {
@@ -200,11 +187,11 @@ export const scrapping = async (data, numJobs = sites.length) => {
 	console.log('=======================================================');
 	console.log('[INFO] - Finished the scrapping..');
 	console.log(`[INFO] - ${doms} DOMS were processed.`);
-	// console.log('Saving in Local Storage....');
-	const { msg, error } = await saveToStorage(news, 'newsInstances');
+	console.log('Saving in Local Storage....');
+	const { msg, error } = await LocalStorage.setItem('newsInstances', news) // await saveToStorage(news, 'newsInstances');
 	// console.log({ msg });
-	// console.log('Retrieving from localStorage...');
-	const instancesFromLocalStorage = await getFromStorage('newsInstances');
+	console.log('Retrieving from localStorage...');
+	const instancesFromLocalStorage = await LocalStorage.getItem('newsInstances');
 	const endScrap = performance.now();
 	// console.log({ news });
 	// now we process the retrieved data
@@ -222,6 +209,7 @@ export const scrapping = async (data, numJobs = sites.length) => {
 			instance['topic'] = topicsExtracted;
 			return instance;
 		}
+		return null
 	});
 	console.log('=======================================================');
 	console.log(
@@ -249,24 +237,6 @@ const localScrapping = async numJobs => {
 };
 
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-	if (message.type === 'send') {
-		p2pExtension.sendRequest(
-			{
-				data: {
-					automatic: true,
-					info: message.data.job,
-					group: message.data.group ? message.data.group : null
-				},
-				automatic: true
-			},
-			message.data.peer
-		);
-
-		// p2pExtension.sendRequest({
-		// 	data: { automatic: true, info: message.data.job }, automatic: true },
-		// 	usuario
-		// );
-	}
 	if (message.type === 'local') {
 		localScrapping(message.data.numJobs);
 	}

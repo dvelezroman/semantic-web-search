@@ -1,3 +1,5 @@
+// import browser from 'webextension-polyfill';
+const browser = window.browser || window.chrome;
 var pageManager = new ContentPageManager();
 
 //Listening for background's messages

@@ -113,17 +113,6 @@ const FirstScreen = () => {
 		});
 	};
 
-	const handleSendAction = () => {
-		const data = {
-			peer: selectedPeer,
-			job: selectedJob
-		};
-
-		browser.runtime.sendMessage({
-			type: 'send',
-			data
-		});
-	};
 
 	return (
 		<>
@@ -179,31 +168,6 @@ const FirstScreen = () => {
 					</FormControl> */}
 				</Grid>
 				<Grid item xs={12}>
-					<SelectComponentNumbers
-						options={Object.keys(peers)}
-						label={'# Peers'}
-						name='peers-select-number'
-						value={numPeers}
-						onChange={setNumPeers}
-					/>
-					{/* <FormControl className={classes.formControl}>
-						<InputLabel htmlFor='pe-num-native-simple'>{'Select # peers to send'}</InputLabel>
-						<Select
-							native
-							value={numPeers}
-							onChange={event => setNumPeers(event.target.value)}
-							inputProps={{
-								name: 'peersNum',
-								id: `peers-num-native-simple`
-							}}
-						>
-							{peers.map((option, i) => {
-								return <option value={i}>{i}</option>;
-							})}
-						</Select>
-					</FormControl> */}
-				</Grid>
-				<Grid item xs={12}>
 					<Grid container justify='center' spacing={4}>
 						{/* <Grid item xs={6}>
 							<Input label='Search' value={text} onTextChange={setText} />
@@ -213,30 +177,6 @@ const FirstScreen = () => {
 								color={'primary'}
 								text='Local Process'
 								onPress={() => handleSendLocalAction()}
-							/>
-						</Grid>
-					</Grid>
-					<Grid container justify='center' spacing={4}>
-						{/* <Grid item xs={6}>
-							<Input label='Search' value={text} onTextChange={setText} />
-						</Grid> */}
-						<Grid item xs={6} className={classes.button}>
-							<ButtonComponent
-								color={'primary'}
-								text='Send to Selected Peer'
-								onPress={() => handleSendAction()}
-							/>
-						</Grid>
-					</Grid>
-					<Grid container justify='center' spacing={4}>
-						{/* <Grid item xs={6}>
-							<Input label='Search' value={text} onTextChange={setText} />
-						</Grid> */}
-						<Grid item xs={6} className={classes.button}>
-							<ButtonComponent
-								color={'primary'}
-								text='Automatic Send'
-								onPress={() => handleSendAutomaticAction()}
 							/>
 						</Grid>
 					</Grid>

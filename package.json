@@ -9,6 +9,7 @@
 		"@testing-library/user-event": "^7.2.1",
 		"cheerio": "^1.0.0-rc.3",
 		"compromise": "^12.3.0",
+		"moment": "^2.24.0",
 		"multilang-sentiment": "^1.2.0",
 		"node-fetch": "^2.6.0",
 		"puppeteer": "^2.0.0",
