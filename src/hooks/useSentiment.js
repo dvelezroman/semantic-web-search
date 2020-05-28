@@ -9,8 +9,9 @@ const useSentiment = () => {
 
 	const extractTopics = text => {
 		return nlp(text)
-			.normalize()
-			.topics();
+			// .normalize()
+			.topics() // you can search a specific people here
+			.json();
 	};
 
 	return { getScore, extractTopics };

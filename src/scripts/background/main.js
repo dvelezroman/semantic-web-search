@@ -1,3 +1,4 @@
+/*global chrome*/
 import cheerio from 'cheerio';
 import browser from 'webextension-polyfill';
 import sites from '../../resources/sites';
@@ -242,8 +243,18 @@ const localScrapping = async numJobs => {
 	console.log({ dataProcessed });
 };
 
-browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-	if (message.type === 'local') {
-		localScrapping(message.data.numJobs);
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+	console.log({ request });
+	if (request.type === 'local') {
+		localScrapping(request.data.numJobs).then(() => {
+			sendResponse({ farewell: "Scrapping completed..." });
+		});
 	}
+	if (request.type === 'clearStorage') {
+		LocalStorage.clearStorage('newsInstances').then(() => {
+			console.log('Limpio');
+			sendResponse({ farewell: "Storage cleared...", complete: true });
+		});
+	};
+	return true
 });

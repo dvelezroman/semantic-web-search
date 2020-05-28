@@ -11,7 +11,7 @@ class LocalStorageRaw {
         console.log({ oldData });
         if (!oldData.error) {
             const updatedData = [ ...oldData.data.newsInstances, ...data]
-            chrome.storage.local.set(
+            browser.storage.local.set(
                 {
                     [this.storageKey]: updatedData
                 }
@@ -24,7 +24,7 @@ class LocalStorageRaw {
 
     getItem() {
         return new Promise((resolve, reject) => {
-            chrome.storage.local.get({ [this.storageKey]: [] }, data => {
+            browser.storage.local.get({ [this.storageKey]: [] }, data => {
                 resolve({ msg: 'Data retrieved', data, error: false });
             });
         });
@@ -39,23 +39,18 @@ class LocalStorageRaw {
 
     dropItem(key) { return new Promise((resolve, reject) => {
         try {
-            chrome.storage.local.removeItem(key);
+            browser.storage.local.removeItem(key);
             resolve({ msg: 'Element deleted.', error: false })
         } catch (error) {
             reject({ msg: 'Error while removing data.', error})
         }
     })}
 
-    clearStorage() {
+    clearStorage(key) {
         return new Promise((resolve, reject) => {
             try {
-                chrome.storage.local.clear(function() {
-                    const error = chrome.runtime.lastError;
-                      if (error) {
-                        console.error(error);
-                      }
-                      resolve({ msg: 'The storage was cleaned.', error: false })
-                   });
+                browser.storage.local.remove(this.storageKey);
+                resolve({ msg: 'The storage was cleaned.', error: false });
             } catch (error) {
                 reject({ msg: 'Error while cleaning the store data.', error})
             }
