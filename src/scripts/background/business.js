@@ -56,7 +56,9 @@ export const getUrls = (DOM, site, sprint) => {
 	const $ = cheerio.load(DOM);
 	let aTags = [];
 	if (site.type === 'home') {
-		aTags = $(site.homeNewsSelector[0]).get();
+		aTags = Array.isArray(site.homeNewsSelector)
+			? $(site.homeNewsSelector[0]).get()
+			: [];
 		// aTags = [...aTags, $(site.homeNewsSelector[1]).get()];
 	} else {
 		aTags = $(site.objectDefinition.urls).get();
@@ -91,12 +93,57 @@ export const getUrls = (DOM, site, sprint) => {
 	return jsonUrls;
 };
 
-export const localScrapping = async numJobs => {
-	console.log('[INFO] - The process selected is local.');
-	const dataProcessed = await scrapping({ info: 'All' }, numJobs);
-	console.log('=========================================');
-	console.log(`[INFO] - The scrapping was done locally.`);
-	console.log({ dataProcessed });
+// Init Process
+export const initProcess = async (site, sprint) => {
+	const instancesRetrieved = await LocalStorage.getItem();
+	if (validateUrl(site.siteURL) && isValidUrl(site.siteURL)) {
+		const exists = await LocalStorage.findItem(
+			instancesRetrieved,
+			site.siteURL
+		);
+		if (!exists) {
+			instancesRetrieved.data &&
+				instancesRetrieved.data.newInstances &&
+				instancesRetrieved.data.newInstances.push(site);
+			try {
+				urlDict[site.siteURL] = true;
+				const { error, dom } = await retrieveDOM(site.siteURL);
+				if (error)
+					throw new Error(
+						'[ERROR] - Error retrieving this site: ' + site.siteURL
+					);
+				doms += 1;
+				if (site.type === 'news') {
+					site.home = sprint === 1;
+					if (sprint === 1) {
+						// is in HOME
+						site.inHomeFrom = getNowTime();
+						site.inHomeUntil = getNowTime();
+					}
+					site.content = getContent(dom, site);
+					site.fetched = true;
+					site.date = getDate(dom, site);
+					if (site.content !== '') {
+						news.push({ ...site });
+						site.status = 'No content.';
+					}
+				}
+				const newInstances = getUrls(dom, site, sprint + 1);
+				instances.push(...newInstances);
+			} catch (e) {
+				console.log(e.message);
+			}
+		} else {
+			if (sprint === 1) {
+				site.inHomeUntil = getNowTime();
+			}
+			console.log(
+				'[INFO] - This news are already stored in LocalStorage: ' + site.siteURL
+			);
+		}
+	} else {
+		console.log('[ERROR] - Url not valid: ' + site.siteURL);
+	}
 };
 
 export const scrapping = async (data, numJobs = sites.length) => {
@@ -123,7 +170,7 @@ export const scrapping = async (data, numJobs = sites.length) => {
 	);
 	for (const instance of instances) {
 		if (instance.sprint <= 1) {
-			await initProcess(instance, 1);
+			await initProcess(instance, 1); // sprint two
 		} else break;
 	}
 	console.log('=======================================================');
@@ -173,52 +220,10 @@ export const scrapping = async (data, numJobs = sites.length) => {
 	};
 };
 
-// Init Process
-export const initProcess = async (site, sprint) => {
-	if (validateUrl(site.siteURL) && isValidUrl(site.siteURL)) {
-		const instancesRetrieved = await LocalStorage.getItem('newsInstances');
-		const exists = await LocalStorage.findItem(
-			instancesRetrieved,
-			site.siteURL
-		);
-		if (!exists) {
-			try {
-				urlDict[site.siteURL] = true;
-				const { error, dom } = await retrieveDOM(site.siteURL);
-				if (error)
-					throw new Error(
-						'[ERROR] - Error retrieving this site: ' + site.siteURL
-					);
-				doms += 1;
-				if (site.type === 'news') {
-					site.home = sprint === 1;
-					if (sprint === 1) {
-						// is in HOME
-						site.inHomeFrom = getNowTime();
-						site.inHomeUntil = getNowTime();
-					}
-					site.content = getContent(dom, site);
-					site.fetched = true;
-					site.date = getDate(dom, site);
-					if (site.content !== '') {
-						news.push({ ...site });
-						site.status = 'No content.';
-					}
-				}
-				const newInstances = getUrls(dom, site, sprint + 1);
-				instances.push(...newInstances);
-			} catch (e) {
-				console.log(e.message);
-			}
-		} else {
-			if (sprint === 1) {
-				site.inHomeUntil = getNowTime();
-			}
-			console.log(
-				'[INFO] - This news is already stored in LocalStorage: ' + site.siteURL
-			);
-		}
-	} else {
-		console.log('[ERROR] - Url not valid: ' + site.siteURL);
-	}
+export const localScrapping = async numJobs => {
+	console.log('[INFO] - The process selected is local.');
+	const dataProcessed = await scrapping({ info: 'All' }, numJobs);
+	console.log('=========================================');
+	console.log(`[INFO] - The scrapping was done locally.`);
+	console.log({ dataProcessed });
 };
