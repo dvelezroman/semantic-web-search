@@ -1,13 +1,13 @@
 import React from 'react';
 import './App.css';
-import FirstScreen from './containers/FirstScreen';
+import ControlPanel from './containers/ControlPanel';
 
 function App() {
-	return (
-		<div className='App'>
-			<FirstScreen />
-		</div>
-	);
+  return (
+    <div className="App">
+      <ControlPanel />
+    </div>
+  );
 }
 
 export default App;

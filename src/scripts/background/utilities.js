@@ -1,4 +1,4 @@
-export const removeStopWords = query => {
+export const removeStopWords = (query) => {
   const stopwords = [
     'a',
     'actualmente',
@@ -1864,12 +1864,12 @@ export const removeStopWords = query => {
     'última',
     'últimas',
     'último',
-    'últimos'
+    'últimos',
   ];
 
   var queryWords = query.split(' ');
 
-  var resultwords = queryWords.filter(word => {
+  var resultwords = queryWords.filter((word) => {
     return stopwords.indexOf(word) == -1;
   });
   return resultwords.join(' ');
