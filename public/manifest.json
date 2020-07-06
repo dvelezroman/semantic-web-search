@@ -1,14 +1,16 @@
 {
 	"short_name": "Ivi Search",
-	"name": "Ivi semantic search",
+	"name": "webp2p",
 	"manifest_version": 2,
-	// "content_security_policy": "script-src 'self' 'sha256-WDhufSqZOEoWULzS4Nwz11MNyHzZClVYbQ2JSt1vfkw'; object-src 'self'",
-	"permissions": [],
+	"permissions": ["tabs", "storage", "unlimitedStorage", "https://*/**", "http://*/*"],
 	"author": "dvelezroman",
 	"version": "0.1.0",
 	"browser_action": {
-		"default_popup": "index.html",
-		"default_title": "Ivi Widget"
+		"default_title": "Ivi Search",
+		"default_popup": "index.html"
+	},
+	"background": {
+		"scripts": ["scripts/background/main.js"]
 	},
 	"icons": {
 		"16": "favicon.ico",
