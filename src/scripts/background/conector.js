@@ -124,14 +124,12 @@ class ConectorP2P {
     }
   }
 
-  /*
-	queryResult(event){
-		console.log("Llamada a evento: ",event);
-		//la funcion de instancia esta fuera del scope de la funcion de evento
-		let dato = this.extractDataCallback();
-		this.callback(dato);
-	}
-	*/
+  // queryResult(event) {
+  //   console.log('Llamada a evento: ', event);
+  //   //la funcion de instancia esta fuera del scope de la funcion de evento
+  //   const dato = this.extractDataCallback();
+  //   this.callback(dato);
+  // }
 
   getConnect() {
     try {
@@ -172,11 +170,9 @@ class ConectorP2P {
 
   sendQuery(query, callback) {
     try {
-      /*
-				if (!this.port.onMessage.hasListener(callback)){
-					this.port.onMessage.addListener(callback);
-				}
-				*/
+      if (!this.port.onMessage.hasListener(callback)) {
+        this.port.onMessage.addListener(callback);
+      }
 
       try {
         if (query.method) {

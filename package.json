@@ -1,59 +1,58 @@
 {
-	"name": "ivi",
-	"version": "0.1.0",
-	"private": true,
-	"dependencies": {
-		"@material-ui/icons": "^4.5.1",
-		"@testing-library/jest-dom": "^4.2.4",
-		"@testing-library/react": "^9.4.0",
-		"@testing-library/user-event": "^7.2.1",
-		"cheerio": "^1.0.0-rc.3",
-		"compromise": "^12.3.0",
-		"moment": "^2.24.0",
-		"multilang-sentiment": "^1.2.0",
-		"node-fetch": "^2.6.0",
-		"node-nlp": "^4.2.1",
-		"puppeteer": "^2.0.0",
-		"react": "^16.12.0",
-		"react-dom": "^16.12.0",
-		"react-router": "^5.1.2",
-		"react-scripts": "3.3.0",
-		"request": "^2.88.0",
-		"request-promise": "^4.2.5"
-	},
-	"scripts": {
-		"start": "react-scripts start",
-		"build": "react-scripts build && npm run build_scripts",
-		"test": "react-scripts test",
-		"eject": "react-scripts eject",
-		"build_scripts": "webpack --config webpack.config.js"
-	},
-	"eslintConfig": {
-		"extends": "react-app"
-	},
-	"browserslist": {
-		"production": [
-			">0.2%",
-			"not dead",
-			"not op_mini all"
-		],
-		"development": [
-			"last 1 chrome version",
-			"last 1 firefox version",
-			"last 1 safari version"
-		]
-	},
-	"devDependencies": {
-		"@material-ui/core": "^4.8.0",
-		"eslint": "^7.4.0",
-		"eslint-config-google": "^0.14.0",
-		"eslint-config-prettier": "^6.11.0",
-		"eslint-plugin-prettier": "^3.1.4",
-		"eslint-plugin-react": "^7.20.3",
-		"eslint-plugin-react-hooks": "^4.0.5",
-		"husky": "^4.2.5",
-		"prettier": "^2.0.5",
-		"webextension-polyfill": "^0.6.0",
-		"webpack-cli": "^3.3.10"
-	}
+  "name": "ivi",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@material-ui/icons": "^4.5.1",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.4.0",
+    "@testing-library/user-event": "^7.2.1",
+    "cheerio": "^1.0.0-rc.3",
+    "compromise": "^12.3.0",
+    "moment": "^2.24.0",
+    "multilang-sentiment": "^1.2.0",
+    "node-fetch": "^2.6.0",
+    "node-nlp": "^4.2.1",
+    "puppeteer": "^2.0.0",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-router": "^5.1.2",
+    "react-scripts": "3.3.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.5"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build && npm run build_scripts",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "build_scripts": "webpack --config webpack.config.js"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@material-ui/core": "^4.8.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-react": "^7.20.3",
+    "eslint-plugin-react-hooks": "^4.0.5",
+    "husky": "^4.2.5",
+    "prettier": "^2.0.5",
+    "webextension-polyfill": "^0.6.0",
+    "webpack-cli": "^3.3.10"
+  }
 }

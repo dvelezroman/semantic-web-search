@@ -12,6 +12,12 @@ const instances = [];
 const news = [];
 const urlDict = {};
 
+const asyncForEach = async (array, callback) => {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index]);
+  }
+};
+
 export const retrieveDOM = (url) =>
   new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
@@ -57,6 +63,7 @@ export const getUrls = (DOM, site, sprint) => {
   // new Promise((resolve, reject) => {
   const $ = cheerio.load(DOM);
   let aTags = [];
+  console.log({ site });
   if (site.type === 'home') {
     aTags = Array.isArray(site.homeNewsSelector) ? $(site.homeNewsSelector[0]).get() : [];
     // aTags = [...aTags, $(site.homeNewsSelector[1]).get()];
@@ -151,21 +158,34 @@ export const scrapping = async (data, numJobs = sites.length) => {
   console.log('Working =============================');
   const sitesToScrap = sites.slice(0, numJobs);
 
-  for (const site of sitesToScrap) {
-    // this gives the number of sprints
+  await asyncForEach(sitesToScrap, async (site) => {
     if (siteName === 'All' || siteName === site.name) {
       await initProcess(site, 0); // sprint one
     }
-  }
+  });
+
+  // for (const site of sitesToScrap) {
+  //   // this gives the number of sprints
+  //   if (siteName === 'All' || siteName === site.name) {
+  //     await initProcess(site, 0); // sprint one
+  //   }
+  // }
+
   console.log('=======================================================');
   console.log(`[INFO] - Finished the first scrap over the homes`);
   console.log('=======================================================');
   console.log(`[INFO] - Working on the scrapping over the Url retrieved from home pages`);
-  for (const instance of instances) {
+
+  await asyncForEach(instances, async (instance) => {
     if (instance.sprint <= 1) {
-      await initProcess(instance, 1); // sprint two
-    } else break;
-  }
+      await initProcess(instance, 1);
+    }
+  });
+  // for (const instance of instances) {
+  //   if (instance.sprint <= 1) {
+  //     await initProcess(instance, 1); // sprint two
+  //   } else break;
+  // }
   console.log('=======================================================');
   console.log('[INFO] - Finished the scrapping..');
   console.log(`[INFO] - ${doms} DOMS were processed.`);
@@ -187,7 +207,6 @@ export const scrapping = async (data, numJobs = sites.length) => {
       if (instance.content) {
         const contentRemovedStopWords = removeStopWords(instance.content);
         const topicsExtracted = extractTopics(contentRemovedStopWords);
-
         instance['score'] = getScore(contentRemovedStopWords);
         instance['nonStopWord'] = contentRemovedStopWords;
         instance['topic'] = topicsExtracted;
