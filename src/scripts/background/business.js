@@ -63,10 +63,12 @@ export const getUrls = (DOM, site, sprint) => {
   // new Promise((resolve, reject) => {
   const $ = cheerio.load(DOM);
   let aTags = [];
-  console.log({ site });
   if (site.type === 'home') {
-    aTags = Array.isArray(site.homeNewsSelector) ? $(site.homeNewsSelector[0]).get() : [];
-    // aTags = [...aTags, $(site.homeNewsSelector[1]).get()];
+    if (Array.isArray(site.homeNewsSelector)) {
+      if (site && site.homeNewsSelector && site.homeNewsSelector.length) {
+        aTags = $(site.homeNewsSelector[0]).get();
+      }
+    }
   } else {
     aTags = $(site.objectDefinition.urls).get();
   }
@@ -112,8 +114,9 @@ export const initProcess = async (site, sprint) => {
       try {
         urlDict[site.siteURL] = true;
         const { error, dom } = await retrieveDOM(site.siteURL);
-        if (error)
+        if (error) {
           throw new Error('[ERROR] - Error retrieving this site: ' + site.siteURL);
+        }
         doms += 1;
         if (site.type === 'news') {
           site.home = sprint === 1;
@@ -217,7 +220,8 @@ export const scrapping = async (data, numJobs = sites.length) => {
   );
   console.log('=======================================================');
   console.log(
-    '[INFO] - Finished the process to extracted data, now I send the data through a  response.'
+    `[INFO] - Finished the process to extracted data, 
+    now I send the data through a  response.`
   );
   const endProcess = performance.now();
   const scrapTime = endScrap - startScrap;

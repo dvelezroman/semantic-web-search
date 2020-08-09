@@ -7,7 +7,7 @@ export const regexs = {
   telegram: /.+(telegram).+/,
   pinterest: /.+(pinterest).+/,
   plus: /.+(plus.google.com).+/,
-  mailto: /.+(mailto).+/,
+  mailto: /.+(mailto:).+/,
   spotify: /.+(spotify).+/,
   linkedin: /.+(linkedin).+/,
 };
